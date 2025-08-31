@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model SkillPath {
+  id        String   @id @default(uuid())
+  name      String
+  sommaire  Json
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lessons   Lesson[]
+}
+
+model Lesson {
+  id          String          @id @default(uuid())
+  title       String
+  order       Int
+  status      String          @default("PENDING")
+  skillPathId String
+  skillPath   SkillPath       @relation(fields: [skillPathId], references: [id])
+  content     LessonContent[]
+
+  @@unique([skillPathId, order])
+}
+
+model LessonContent {
+  id         String   @id @default(uuid())
+  version    String
+  content    Json
+  isSelected Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  lessonId   String
+  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+
+  @@unique([lessonId, version])
+}
+
+model ContentEmbedding {
+  id       String @id @default(uuid())
+  chunk    String
+  version  String
+  lessonId String
+  source   String
+}
